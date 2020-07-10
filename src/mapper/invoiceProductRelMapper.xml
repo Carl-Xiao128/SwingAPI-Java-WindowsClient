@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.invoiceMapper">
+     <insert id="insertInvoiceProductRel" parameterType="entity.InvoiceProductRel">
+          insert into invoice_product_rel (INVOICE_SID,PRODUCT_SID,PRODUCT_NUM,CREATE_TIME)
+          values
+          (#{invoiceSid,jdbcType=VARCHAR},#{productSid,jdbcType=VARCHAR},
+          #{productNum,jdbcType=VARCHAR},now())
+     </insert>
+     
+     <select id="selectInvoiceList" parameterType="entity.vo.InvoiceProductVo" resultType="entity.vo.InvoiceProductVo">
+          select I.* , P.CODE, P.PNAME, P.STANDARD, P.STANDARD_UNIT, R.PRODUCT_NUM
+          from  invoice_product_rel R left join product on 
+          R.PRODUCT_SID = P.SID left join invoice on R.INVOICE_SID = I.SID 
+          <where>
+          <if test="invoiceCode != null">
+          I.INVOICE_CODE = #{invoiceCode,jdbcType=VARCHAR}
+          </if>          
+          </where>
+     </select>
+     <delete id="deleteProByInvoiceCode" parameterType="java.lang.String">
+		delete from invoice_product_rel
+		where INVOICE_SID = #{invoiceCode,jdbcType=VARCHAR}
+	</delete>
+</mapper>

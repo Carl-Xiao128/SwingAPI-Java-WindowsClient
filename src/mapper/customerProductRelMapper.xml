@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.invoiceMapper">
+    <insert id="insertCusProRel" parameterType="entity.CustomerProRel">
+        insert into CUSTOMER_PRO_REL (PRODUCT_SID,CUSTOMER_SID,UNIT_PRICE,CREATE_TIME,OPT_TIME,IF_DELETE)
+        values
+        (#{productSid,jdbcType=VARCHAR},#{customerSid,jdbcType=VARCHAR},#{unitPrice,jdbcType=DECIMAL},
+        now(),now(),#{ifDelete,jdbcType=VARCHAR})
+    </insert>
+    
+    
+    <select id="selectCusProRelOne" parameterType="int" resultType="entity.vo.CustomerProRelVo">
+        select p.CODE,p.PNAME,p.STANDARD,p.STANDARD_UNIT standardUnit,p.UNIT,c.CNAME, r.SID,r.PRODUCT_SID productSid,r.CUSTOMER_SID customerSid,r.UNIT_PRICE unitPrice,r.CREATE_TIME,r.OPT_TIME,r.IF_DELETE 
+        from customer_pro_rel r left join product p on r.product_sid = p.sid
+        left join customer c on r.customer_sid = c.sid
+        where 
+        r.sid = #{sid,jdbcType=NUMERIC}      
+    </select>
+    
+    <select id="selectPriceByCSidAndPSid" parameterType="entity.vo.CustomerProRelVo" resultType="decimal">
+        select UNIT_PRICE from customer_pro_rel
+        where  CUSTOMER_SID=#{customerSid,jdbcType=VARCHAR} 
+        and PRODUCT_SID = #{productSid,jdbcType=VARCHAR}   
+    </select>
+    
+    <select id="selectCusProRelList" parameterType="entity.vo.CustomerProRelVo" resultType="entity.vo.CustomerProRelVo">
+        select p.CODE,p.PNAME,p.STANDARD,p.STANDARD_UNIT standardUnit,p.UNIT,c.CNAME,r.SID,r.PRODUCT_SID productSid,r.CUSTOMER_SID customerSid,r.UNIT_PRICE unitPrice,r.CREATE_TIME,r.OPT_TIME,r.IF_DELETE 
+        from customer_pro_rel r left join product p on r.product_sid = p.sid
+        left join customer c on r.customer_sid = c.sid
+        <where>
+        	c.IF_DELETE =0 AND P.IF_DELETE=0
+        <if test="sid != null">
+        and r.sid = #{sid,jdbcType=NUMERIC}
+        </if>
+        <if test="productSid != null">
+        and r.PRODUCT_SID = #{productSid,jdbcType=VARCHAR}
+        </if>
+        <if test="customerSid != null">
+        and r.CUSTOMER_SID = #{customerSid,jdbcType=VARCHAR}
+        </if>
+       	<if test="fieldLike != null">
+		      <![CDATA[
+		      and (
+		        p.PNAME like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%') or
+		        c.CNAME like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%') or
+		        p.CODE like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%')
+		      )
+		      ]]>
+		</if>
+        </where> 
+    </select>
+    
+    <update id="updateCusProRel" parameterType="entity.CustomerProRel">
+        update customer_pro_rel
+        <set>
+        <if test="unitPrice != null">
+            UNIT_PRICE = #{unitPrice,jdbcType=DECIMAL},
+        </if>
+         <if test="ifDelete != null">
+             IF_DELETE = #{ifDelete,jdbcType=VARCHAR},
+          </if>
+            OPT_TIME = now(),
+        </set>
+        where SID = #{sid,jdbcType=NUMERIC}
+    </update>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.customerMapper">
+    <insert id="insertCustomer" parameterType="entity.Customer">
+       insert into CUSTOMER (CNAME,PERSON,PHONE,AREACHARGE,AREA,ADDRESS,CREATE_TIME,OPT_TIME,IF_DELETE) 
+       values (#{cname,jdbcType=VARCHAR},#{person,jdbcType=VARCHAR},
+       #{phone,jdbcType=VARCHAR},#{areaCharge,jdbcType=VARCHAR},#{area,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR},
+       now(),now(),#{ifDelete,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="getCustomerList" parameterType="entity.Customer" 
+        resultType="entity.Customer">
+        select * from CUSTOMER
+        <where>
+        IF_DELETE = '0'
+        <if test="sid != null">
+         and SID =#{sid,jdbcType=NUMERIC}
+        </if>
+        <if test="cname != null">
+         and CNAME like CONCAT('%','${cname}','%' )
+        </if>
+        </where>
+    </select>
+    
+    <select id="getCustomerOne" parameterType="entity.Customer" 
+        resultType="entity.Customer">
+        select * from CUSTOMER
+        <where>
+        <if test="cname != null">
+          SID = #{sid,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+    
+    <update id="updateCustomer" parameterType="entity.Customer">
+        update CUSTOMER
+        <set>
+          <if test="cname != null">
+             CNAME = #{cname,jdbcType=VARCHAR},
+          </if>
+          <if test="phone != null">
+             PHONE = #{phone,jdbcType=VARCHAR},
+          </if>
+          <if test="person != null">
+             PERSON = #{person,jdbcType=VARCHAR},
+          </if>
+          <if test="areaCharge != null">
+             AREACHARGE= #{areaCharge,jdbcType=VARCHAR},
+          </if>
+          <if test="area != null">
+             AREA = #{area,jdbcType=VARCHAR},
+          </if>
+          <if test="address != null">
+             ADDRESS = #{address,jdbcType=VARCHAR},
+          </if>
+          <if test="ifDelete != null">
+             IF_DELETE = #{ifDelete,jdbcType=VARCHAR},
+          </if>
+             OPT_TIME = now()       
+        </set>
+        where SID = #{sid,jdbcType=NUMERIC}
+    </update>
+</mapper>

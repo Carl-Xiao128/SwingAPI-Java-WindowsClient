@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.invoiceMapper">
+    <insert id="insertInvoice" parameterType="entity.Invoice">
+      insert into INVOICE (SID,INVOICE_CODE,CAR_NUM,CARRIER,CREATE_TIME,CUSTOMER_SID,DELIVERY_DATETIME,FAX,
+      FREIGHT,INVOICE_DATETIME,INVOICE_PERSON,LICENSE_NUMBER,MONEY,MONEY_TYPE,OPT_TIME,SALES_TEL,DISCOUNT,REMARK)
+      values
+      (#{sid,jdbcType=VARCHAR},#{invoiceCode,jdbcType=VARCHAR},#{carNum,jdbcType=VARCHAR},#{carrier,jdbcType=VARCHAR},
+       now(),#{customerSid,jdbcType=VARCHAR},#{deliveryDatetime,jdbcType=VARCHAR},
+       #{fax,jdbcType=VARCHAR},#{freight,jdbcType=VARCHAR},#{invoiceDatetime,jdbcType=VARCHAR},
+       #{invoicePerson,jdbcType=VARCHAR},#{licenseNumber,jdbcType=VARCHAR},#{money,jdbcType=DECIMAL},
+       #{moneyType,jdbcType=VARCHAR},now(),#{salesTel,jdbcType=VARCHAR},#{discount,jdbcType=DECIMAL},#{remark,jdbcType=VARCHAR})
+    </insert>   
+    
+     <select id="selectInvoiceProCus" parameterType="entity.SearchParam" resultType="entity.InvoiceProCus">
+		SELECT
+			inv.INVOICE_CODE invoiceCode,
+			inv.DELIVERY_DATETIME deliveryTime,
+			inv.CARRIER carrier,
+		  	inv.ADDMONEY addMoney,
+			inv.CREDITMONEY creditMoney,
+			inv.MONEY_TYPE moneyType,
+			inv.DISCOUNT discount,
+			inv.REMARK remark,
+			cus.CNAME cname,
+			cus.AREA area,
+			cus.PERSON person,
+			cus.AREACHARGE areaCharge,
+			pro.PTYPE ptype,
+			pro.CODE code,
+			pro.PNAME pname,
+			pro.STANDARD standard,
+			pro.UNIT unit,
+			pro.STANDARD_UNIT standardUnit,
+		  	inpro.PRODUCT_NUM productNum,
+		  	cuspro.UNIT_PRICE unitPrice,
+		  	(cuspro.UNIT_PRICE * inpro.PRODUCT_NUM) totalMoney
+		FROM invoice inv
+		LEFT JOIN customer cus ON inv.CUSTOMER_SID = cus.SID
+		LEFT JOIN invoice_product_rel inpro ON inv.INVOICE_CODE = inpro.INVOICE_SID
+		LEFT JOIN product pro ON inpro.PRODUCT_SID = pro.SID
+		LEFT JOIN customer_pro_rel cuspro ON (cus.SID = cuspro.CUSTOMER_SID and pro.SID =cuspro.PRODUCT_SID)
+		<where>
+        <if test="fieldLike != null">
+		      <![CDATA[
+		      and (
+		        pro.PNAME like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%') or
+		        cus.CNAME like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%') or
+		        pro.CODE like CONCAT('%',#{fieldLike,jdbcType=VARCHAR},'%')
+		      )
+		      ]]>
+		</if>
+	    <if test="startTime != null">
+	      <![CDATA[ and inv.DELIVERY_DATETIME >= #{startTime,jdbcType=DATE} ]]>
+	    </if>
+	    <if test="endTime != null">
+	      <![CDATA[ and inv.DELIVERY_DATETIME <= #{endTime,jdbcType=DATE} ]]>
+	    </if>
+	    <if test="pname != null">
+	      and pro.PNAME = #{pname,jdbcType=VARCHAR}
+	    </if>
+	    <if test="cname != null">
+	      and cus.CNAME = #{cname,jdbcType=VARCHAR}
+	    </if>
+	    <if test="code != null">
+	      and pro.CODE = #{code,jdbcType=VARCHAR}
+	    </if>
+	    </where>
+    </select>  
+    <delete id="deleteInvByInvoiceCode" parameterType="java.lang.String">
+		delete from invoice
+		where INVOICE_CODE = #{invoiceCode,jdbcType=VARCHAR}
+	</delete>
+	 <update id="updateInvoice" parameterType="entity.Invoice">
+        update invoice
+        <set>
+        <if test="addMoney != null">
+            ADDMONEY = #{addMoney,jdbcType=DECIMAL},
+        </if>
+        <if test="creditMoney != null">
+            CREDITMONEY = #{creditMoney,jdbcType=DECIMAL},
+        </if>
+        </set>
+        where INVOICE_CODE = #{invoiceCode,jdbcType=VARCHAR}
+    </update>
+</mapper>

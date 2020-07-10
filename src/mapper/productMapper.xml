@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.productMapper">
+   <insert id="insertProduct" parameterType="entity.Product">
+     insert into PRODUCT (CODE,PNAME,PTYPE,STANDARD,STANDARD_UNIT,UNIT,CREATE_TIME,OPT_TIME,IF_DELETE)
+     values(#{code,jdbcType=VARCHAR},#{pname,jdbcType=VARCHAR},
+       #{ptype,jdbcType=VARCHAR},#{standard,jdbcType=DECIMAL},#{standardUnit,jdbcType=VARCHAR},#{unit,jdbcType=VARCHAR},
+       now(),now(),#{ifDelete,jdbcType=VARCHAR})
+   </insert> 
+   
+   <select id="selectProductList" parameterType="entity.Product" resultType="entity.Product">
+     select SID,CODE,PNAME,PTYPE,STANDARD,STANDARD_UNIT standardUnit,UNIT,CREATE_TIME,OPT_TIME,IF_DELETE  from PRODUCT 
+     <where>
+    	 IF_DELETE = '0'
+        <if test="sid != null">
+         and SID =#{sid,jdbcType=NUMERIC}
+        </if>
+        <if test="pname != null">
+         and PNAME like CONCAT('%','${pname}','%' )
+        </if>
+     </where>
+   </select>
+   
+   <select id="selectProductOne" parameterType="entity.Product" resultType="entity.Product">
+     select * from PRODUCT 
+     <where>
+       <if test="code != null">
+          SID = #{sid,jdbcType=NUMERIC}
+       </if>
+     </where>
+   </select>
+   
+   <select id="selectProductVoList" parameterType="string" resultType="entity.vo.ProductVo">
+     select P.*,R.UNIT_PRICE
+     from product P left join customer_pro_rel R on
+     P.SID = R.PRODUCT_SID
+     where R.CUSTOMER_SID =  #{customerSid,jdbcType=VARCHAR}
+   </select>
+   
+   <update id="updateProduct" parameterType="entity.Product">
+   update PRODUCT
+   <set>
+     <if test="code != null">
+             CODE = #{code,jdbcType=VARCHAR},
+          </if>
+          <if test="pname != null">
+             PNAME = #{pname,jdbcType=VARCHAR},
+          </if>
+          <if test="ptype != null">
+             PTYPE = #{ptype,jdbcType=VARCHAR},
+          </if>
+          <if test="standard != null">
+             STANDARD = #{standard,jdbcType=DECIMAL},
+          </if>
+          <if test="standard != null">
+             STANDARD_UNIT = #{standardUnit,jdbcType=VARCHAR},
+          </if>
+          <if test="unit != null">
+             UNIT = #{unit,jdbcType=VARCHAR},
+          </if>
+          <if test="ifDelete != null">
+             IF_DELETE = #{ifDelete,jdbcType=VARCHAR},
+          </if>
+             OPT_TIME = now()       
+        </set>
+        where SID = #{sid,jdbcType=NUMERIC}
+   </update>
+</mapper>
